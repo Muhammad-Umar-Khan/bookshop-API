@@ -29,11 +29,11 @@ app.get("/books/:id", bookControllers.bookById);
 
 app.post("/books", auth, isAdmin, bookControllers.createBook);
 
-app.put("/books/:id", auth, isAdmin, bookControllers.updateBook);
+app.patch("/books/:id", auth, isAdmin, bookControllers.updateBook);
 
 app.delete("/books/:id", auth, isAdmin, bookControllers.deleteBook);
 
-app.get("/sales", auth, isAdmin, bookControllers.sales);
+app.get("/sales/:id", auth, isAdmin, bookControllers.sales);
 
 app.listen(3001, () => {
   console.log("Server started on port 3001");

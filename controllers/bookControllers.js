@@ -1,4 +1,5 @@
 const Book = require("../models/book");
+const moment = require("moment");
 
 exports.allBooks = async (req, res) => {
   try {
@@ -48,16 +49,27 @@ exports.createBook = async (req, res) => {
 };
 
 exports.updateBook = async (req, res) => {
-  const { title, author, price, chapters } = req.body;
   try {
     const updatedBook = await Book.findByIdAndUpdate(
       req.params.id,
       {
-        title,
-        author,
-        price,
-        chapters,
+        title: req.body?.title,
+        author: req.body?.author,
+        price: req.body?.price,
+        chapters: [
+          {
+            title: req.body?.chapters[0]?.title,
+            chapterNo: req.body?.chapters[0]?.chapterNo,
+            pages: [
+              {
+                pageNo: req.body?.chapters[0]?.pages[0]?.pageNo,
+                pageBody: req.body.chapters[0]?.pages[0]?.pageBody,
+              },
+            ],
+          },
+        ],
       },
+      // req.body,
       { new: true }
     );
     if (!updatedBook) {
@@ -85,9 +97,9 @@ exports.deleteBook = async (req, res) => {
 };
 
 exports.sales = async (req, res) => {
-  const { bookId, period } = req.query;
+  const {bookId} = req.params.id;
+  const {period } = req.query;
 
-  // Check if book ID is provided and valid
   const match = {};
   if (bookId) {
     if (!mongoose.Types.ObjectId.isValid(bookId)) {
@@ -96,7 +108,6 @@ exports.sales = async (req, res) => {
     match.book = mongoose.Types.ObjectId(bookId);
   }
 
-  // Set time period filter
   let startDate;
   switch (period) {
     case "weekly":
@@ -112,7 +123,6 @@ exports.sales = async (req, res) => {
   match.date = { $gte: startDate };
 
   try {
-    // Aggregate sales data
     const salesData = await Book.aggregate([
       { $match: match },
       { $group: { _id: "$book", totalSales: { $sum: "$quantity" } } },
